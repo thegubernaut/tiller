@@ -1,0 +1,41 @@
+[package]
+# Renamed from `gcc-core` at 1.0.1. "gcc" is unsearchable next to the GNU
+# Compiler Collection, so the crate could never be found by anyone who did not
+# already know it existed. crates.io cannot rename a crate: `gcc-core` 1.0.0
+# stays published forever, and `gcc-core` 1.0.1 is a deprecation shim
+# (packages/rust-shim/) that re-exports this crate. Neither is yanked.
+#
+# The controller itself did not change. The compiled wasm is byte-identical
+# across the rename — see CHANGELOG 1.0.1-sync.
+name = "gubernaut-core"
+version = "1.0.1"
+edition = "2021"
+description = "Deterministic runtime governor for LLM agents: the meta-level controller (HRL), with golden-trace parity to the Python reference. Compiles to wasm."
+license = "Apache-2.0"
+readme = "README.md"
+keywords = ["llm", "agents", "governance", "wasm", "deterministic"]
+categories = ["wasm", "algorithms", "science"]
+repository = "https://github.com/thegubernaut/gubernaut"
+homepage = "https://gubernaut.com"
+
+[package.metadata.gubernaut]
+# Concept (all-versions) DOI — canonical citation target for the packages.
+doi = "10.5281/zenodo.21303518"
+
+[lib]
+crate-type = ["lib", "cdylib"]
+
+# Tuned for a small, self-contained wasm cdylib (added 0.1.1 with the FFI shim).
+# `cargo test` uses the dev/test profile and is unaffected by these.
+[profile.release]
+opt-level = "z"      # optimise for size (edge/wasm target)
+lto = true
+codegen-units = 1
+panic = "abort"      # no unwinding tables in the wasm module
+strip = true         # strip local/debug symbols (keeps #[no_mangle] exports)
+
+[dev-dependencies]
+# float_roundtrip: serde_json's default float parse can be 1 ulp off; the
+# parity contract compares bits, so the golden reader must be exactly rounded.
+# Pinned to the lockfile version for a reproducible packaged verify build.
+serde_json = { version = "=1.0.150", features = ["float_roundtrip"] }
