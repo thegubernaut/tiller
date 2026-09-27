@@ -16,17 +16,21 @@ Sometimes an AI agent gets stuck. It tries the same thing over and over, and eve
 try costs you money, because you pay for every message sent to the AI model. If nobody is
 watching, this can burn through a lot of money very fast, before a person even notices.
 
-Tiller sits between your code and the AI model and watches every single turn of the
-conversation. If it sees the agent starting to spiral, it steps in and stops the loop. The
+Tiller sits between your code and the AI model and checks every request before it goes
+out. If it sees the agent starting to spiral, it steps in and stops the loop. The
 turns before the stop are sent and paid for; the stopped call is never sent.
 
 ## How does it work, in plain words?
 
-Every time your AI agent takes a turn, Tiller looks at three simple numbers:
+Every time your code sends the AI model a request, Tiller works out three simple numbers on
+your machine, from the messages your code sent as the user:
 
 1. **How intense** the turn feels.
 2. **How positive or negative** the turn feels.
 3. **How much this turn repeats** the last one.
+
+The AI model's own replies and the results of tool calls are not scored, so a loop that
+happens only there is not one Tiller detects.
 
 The part of Tiller that decides never reads your actual words. It only ever looks at these
 three numbers, so a sentence in the conversation has nothing to argue with. That protection
@@ -53,10 +57,11 @@ Tiller was tested against real AI models, on purpose, in a situation designed to
 agent loop. Each test compared the bill with no protection against the bill with Tiller on,
 with both runs making the same number of attempts.
 
-**Across seven measured configurations in four model families, turning Tiller on saved 79.8%
-to 95.9% of that loop's bill.** The best result was GPT-5.6 Sol: $0.1669 with no protection,
+**On the verbatim-loop test, across seven measured configurations in four model families,
+turning Tiller on saved 79.8% to 95.9% of that loop's spend.** The best result was GPT-5.6 Sol: $0.1669 with no protection,
 $0.0068 with Tiller, 95.9% saved, on a 25-attempt loop. The smallest saving was Claude Haiku
-4.5, at 79.8%. The best result is never shown without the smallest one.
+4.5, at 79.8%. The best result is never shown without the smallest one. Gemini-native Gemma
+is free-tier only, so those rows are token deltas and carry no dollar claim.
 
 Every number here comes from a recorded, repeatable test. Anyone can run the same test and
 check the math. The full, detailed record, including every test that was run, is
@@ -68,8 +73,9 @@ in this same repository under [`receipts/`](receipts/), and also at
 Being honest about the edges of what something does is just as important as explaining what
 it does.
 
-- Tiller does not read or judge what your AI actually says. It only watches the three
-  numbers described above.
+- Tiller is not a content filter and does not judge what your AI says. It reads the
+  messages your code sends only to work out the three numbers above, on your machine, and
+  the deciding part sees only those numbers.
 - Tiller cannot promise it will catch every possible bad situation. What it catches and what
   it misses are both published, in [`docs/LIMITS.md`](docs/LIMITS.md).
 - Tiller is not a mind and does not think or feel anything. It is a simple, predictable set
